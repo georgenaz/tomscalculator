@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Tom's calculator</title>
+</head>
+<body>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<!--    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>-->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+    var calculator = {
+        usefullfields: {
+            amount: null,
+            price: null,
+            statecode: null,
+            amountdiscount: null,
+            statetax: null,
+            alert: null
+        },
+
+        init : function() {
+            this.usefullfields.amount = $('#amount');
+            this.usefullfields.price = $('#price');
+            this.usefullfields.statecode = $('#statecode');
+            this.usefullfields.amountdiscount = $('#amountdiscount');
+            this.usefullfields.statetax = $('#statetax');
+            this.usefullfields.result = $('#resultfield');
+            this.usefullfields.alert = $('#alert').clone();
+            $("#calcbtn").click(function() {calculator.calculate()})
+        },
+
+        clearfields : function() {
+            this.usefullfields.statetax.val('');
+            this.usefullfields.amountdiscount.val('');
+        },
+
+        calculate : function() {
+            var amount = this.usefullfields.amount.val();
+            var price = this.usefullfields.price.val();
+            var statecode = this.usefullfields.statecode.val();
+
+            $.ajax({
+                type: "POST",
+                url: '/calc',
+                data: {
+                    amount: amount,
+                    price: price,
+                    statecode: statecode
+                },
+                dataType: 'json',
+                success: calculator.processresponse
+            })
+        },
+
+        processresponse: function(data) {
+            if (data.status != 'success') {
+                calculator.showwarning();
+                calculator.clearfields();
+                calculator.usefullfields.result.val('not valid value')
+                return false;
+            }
+            calculator.usefullfields.result.val(data.result_price);
+            calculator.usefullfields.statetax.val(data.state_tax);
+            calculator.usefullfields.amountdiscount.val(data.price_with_discount);
+        },
+
+        showwarning: function() {
+            $(".container").append(this.usefullfields.alert.clone());
+            window.setTimeout(function() {
+                $(".alert").alert("close")
+            }, 2000);
+        }
+    }
+
+    $( document ).ready(function() {
+        calculator.init();
+
+        window.setTimeout(function() {
+            $("#alert").alert("close")
+        }, 2000);
+    });
+</script>
+
+    <div class="container">
+        <h1>{{ message }}</h1>
+
+        <div class="form-group">
+            <label for="amount">Количество товаров</label>
+            <input type="number" class="form-control" min="0" step="1" data-bind="value:replyNumber" id="amount" />
+        </div>
+        <div class="form-group">
+            <label for="price">Цена за товар</label>
+            <input type="number" class="form-control" min="0" data-bind="value:replyNumber"  id="price" />
+        </div>
+        <div class="form-group">
+            <label for="statecode">Код штата</label>
+            <select class="form-control" id="statecode">
+                <option value="UT">UT</option>
+                <option value="NV">NV</option>
+                <option value="TX">TX</option>
+                <option value="AL">AL</option>
+                <option value="CA">CA</option>
+            </select>
+        </div>
+        <div class="row mx-md-n5">
+            <div class="col px-md-5"><div class="p-3 border">
+                <label for="amountdiscount">Стоимость со скидкой</label>
+                <input class="form-control" type="text" readonly id="amountdiscount" />
+            </div></div>
+            <div class="col px-md-5"><div class="p-3 border">
+                <label for="statetax">Налог штата</label>
+                <input class="form-control" type="text" readonly id="statetax" />
+            </div></div>
+        </div>
+        <div class="form-group">
+            <label for="resultfield">Итого</label>
+            <input class="form-control" type="text" placeholder="Result..." readonly id="resultfield" />
+        </div>
+        <div class="form-group">
+            <button type="button" class="btn btn-primary" id="calcbtn">Calculate</button>
+        </div>
+        <div class="alert alert-warning fade show animated fadeInDown delay-1s" role="alert" id="alert">
+            Необходимо корректно заполнить все поля
+        </div>
+    </div>
+
+</body>
+</html>

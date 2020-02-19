@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Tom's calculator</title>
+</head>
+<body>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+    var statetax = {
+        'UT': 6.85,
+        'NV': 8,
+        'TX': 6.25,
+        'AL': 4,
+        'CA': 8.25
+    }
+
+    var f_amount = $('amount');
+
+    var calculator = {
+        formfields: {
+            amount: null,
+            price: null,
+            statecode: null,
+            amountdiscount: null,
+            statetax: null,
+            alert: null
+        },
+        statetax : {
+            'UT': 6.85,
+            'NV': 8,
+            'TX': 6.25,
+            'AL': 4,
+            'CA': 8.25
+        },
+
+        init : function() {
+            this.formfields.amount = $('#amount');
+            this.formfields.price = $('#price');
+            this.formfields.statecode = $('#statecode');
+            this.formfields.amountdiscount = $('#amountdiscount');
+            this.formfields.statetax = $('#statetax');
+            this.formfields.result = $('#resultfield');
+            this.formfields.alert = $('#alert').clone();
+            $("#statecode, #amount, #price").change(function() {calculator.calculate()})
+        },
+
+        checkfields : function() {
+            if ( this.formfields.statecode.val() in this.statetax ) {
+                console.log("statecode is ok")
+            } else {
+                this.clearfields();
+                console.log("statecode is fail")
+                return false;
+            }
+            if (
+                ! $.isNumeric(this.formfields.amount.val())
+                || ! $.isNumeric(this.formfields.price.val())
+            ) {
+                this.clearfields();
+                console.log("amount or price is fail")
+                return false;
+            }
+            return true;
+        },
+
+        clearfields : function() {
+            this.formfields.statetax.val('');
+            this.formfields.amountdiscount.val('');
+        },
+
+        calculate : function() {
+            if ( this.checkfields() ) {
+                var amount = this.formfields.amount.val();
+                var price = this.formfields.price.val();
+
+                var sum = amount * price;
+                var tax = this.statetax[this.formfields.statecode.val()];
+                var discount = this.calcdiscount(sum);
+
+                this.formfields.statetax.val(tax);
+                this.formfields.amountdiscount.val(sum * discount);
+                this.formfields.result.val( sum * discount * ( 1 + tax / 100 ) );
+            }
+            else {
+                $(".container").append(this.formfields.alert.clone());
+                window.setTimeout(function() {
+                    $(".alert").alert("close")
+                }, 2000);
+            }
+        },
+
+        calcdiscount : function (sum) {
+            if ( sum >= 50000 ) return 0.85;
+            if ( sum >= 10000 ) return 0.9;
+            if ( sum >= 7000 ) return 0.93;
+            if ( sum >= 5000 ) return 0.95;
+            if ( sum >= 1000 ) return 0.97;
+            return 1;
+        }
+    }
+
+    $( document ).ready(function() {
+        calculator.init();
+
+        window.setTimeout(function() {
+            $("#alert").alert("close")
+        }, 3000);
+    });
+
+</script>
+
+    <div class="container">
+        <h1>Lets calculate</h1>
+
+        <div class="form-group">
+            <label for="amount">Количество товаров</label>
+            <input type="number" class="form-control" min="0" step="1" data-bind="value:replyNumber" id="amount" />
+        </div>
+        <div class="form-group">
+            <label for="price">Цена за товар</label>
+            <input type="number" class="form-control" min="0" data-bind="value:replyNumber"  id="price" />
+        </div>
+        <div class="form-group">
+            <label for="statecode">Код штата</label>
+            <select class="form-control" id="statecode">
+                <option value="UT">UT</option>
+                <option value="NV">NV</option>
+                <option value="TX">TX</option>
+                <option value="AL">AL</option>
+                <option value="CA">CA</option>
+            </select>
+        </div>
+        <div class="row mx-md-n5">
+            <div class="col px-md-5"><div class="p-3 border">
+                <label for="amountdiscount">Стоимость со скидкой</label>
+                <input class="form-control" type="text" readonly id="amountdiscount" />
+            </div></div>
+            <div class="col px-md-5"><div class="p-3 border">
+                <label for="statetax">Налог штата</label>
+                <input class="form-control" type="text" readonly id="statetax" />
+            </div></div>
+        </div>
+        <div class="form-group">
+            <label for="resultfield">Итого</label>
+            <input class="form-control" type="text" placeholder="Result..." readonly id="resultfield" />
+        </div>
+        <div class="alert alert-warning fade show animated fadeInDown delay-1s" role="alert" id="alert">
+            Необходимо корректно заполнить все поля
+        </div>
+    </div>
+
+</body>
+</html>
