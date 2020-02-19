@@ -2,3 +2,6 @@
 .pytest_cache
 tomscalculator.egg-info
 __pycache__
+build
+dist
+env
