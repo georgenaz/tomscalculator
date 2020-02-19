@@ -22,6 +22,6 @@ Just run python-application or install and run
 
 ```$ tomscalc```
 
-### View
+## View
 http://localhost:8010
 
